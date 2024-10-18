@@ -1,0 +1,47 @@
+-- SQLite
+
+-- Comentários em linhas que tenho dificuldade para facilitar meu entendimento e identificar melhor o que é executado!!
+
+-- JOIN não especificado é interpretado como INNER JOIN 
+
+-- a) Encontre o título dos livros que foram emprestados a membros de São Paulo.
+SELECT Membros.nome AS cliente, Livros.titulo  -- Selecionados o titulo do livro e nome de quem pegou como "cliente"
+FROM Empréstimos
+JOIN Livros ON Empréstimos.ISBN = Livros.ISBN
+JOIN Membros ON Empréstimos.ID_MEMBRO = Membros.ID_MEMBRO
+WHERE Membros.cidade = 'SÃO PAULO';
+
+-- b) Encontre o número de empréstimos realizados por cada membro.
+SELECT Membros.ID_MEMBRO, Membros.nome, COUNT(Empréstimos.ID_EMPRESTIMO) AS numero_emprestimos
+FROM Empréstimos
+JOIN Membros ON Empréstimos.ID_MEMBRO = Membros.ID_MEMBRO
+GROUP BY Membros.ID_MEMBRO; -- Agrupa em uma única linha registros com base no mesmo ID
+
+-- c) Liste os membros que não devolveram livros até a data atual.
+SELECT Membros.ID_MEMBRO, Membros.nome, Empréstimos.ISBN, Empréstimos.data_emprestimo
+FROM Empréstimos
+JOIN Membros ON Empréstimos.ID_MEMBRO = Membros.ID_MEMBRO
+WHERE Empréstimos.data_devolucao IS NULL OR Empréstimos.data_devolucao > DATE('now'); -- Checa se a data de devolução não existe ou se é maior que a data atual
+
+-- d) Encontre quantos livros foram publicados antes do ano 2000.
+SELECT COUNT(ISBN) AS quant_livros_antigos -- Como a intenção é uma contagem total, não precisa de agrupamento
+FROM Livros
+WHERE ano_publicacao < 2000;
+
+-- e) Liste todos os livros que ainda não foram emprestados.
+SELECT Livros.titulo
+FROM Livros
+LEFT JOIN Empréstimos ON Livros.ISBN = Empréstimos.ISBN
+WHERE Empréstimos.ISBN IS NULL; -- Resultado vazio pois todos livros do exemplo já foram emprestados.
+
+-- f) Encontre o título do livro mais emprestado, ou seja, o que possui o maior número de empréstimos.
+SELECT Livros.titulo, COUNT(Empréstimos.ISBN) AS total_emprestimos
+FROM Empréstimos
+JOIN Livros ON Empréstimos.ISBN = Livros.ISBN
+GROUP BY Livros.ISBN
+ORDER BY total_emprestimos DESC -- Sem ordenar decrescente, pegaria o livro menos emprestado por default
+LIMIT 1; -- Enunciado pede um único registro, limitando para apenas um resultado
+
+-- Não criei tratamento para casos onde tem mais de um retorno de mais emprestado
+
+
